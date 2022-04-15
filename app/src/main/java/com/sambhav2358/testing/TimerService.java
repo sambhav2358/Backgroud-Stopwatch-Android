@@ -19,16 +19,53 @@ import androidx.core.app.NotificationCompat;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class works in the background to not stop the stop watch timer.
+ *
+ * @author Sambhav Khandelwal
+ */
 public class TimerService extends Service {
 
+    /**
+     * This variable counts the number of seconds passed and then passes it to the notification.
+     */
     long seconds = 0L;
+
+    /**
+     * This variable will help us in preventing multiple notification creation from the handler.
+     * When it is true, a new notification will be created.
+     * When it is false, the notification will be updated and a new one wont be created again.
+     */
     boolean notificationJustStarted = true;
+
+    /**
+     * This is the handler that will help us to run the runnable.
+     */
     public static Handler timerHandler = new Handler();
+
+    /**
+     * This is the runnable in which all the performances will be occurring. The code get executed every 1 seconds.
+     */
     public static Runnable timerRunnable;
+
+    /**
+     * This is the channel id of the notification channel which we create.
+     */
     private final String CHANNEL_ID = "Channel_id";
+
+    /**
+     * This is the notification manager that will help us to show the notification
+     */
     NotificationManager mNotificationManager;
+
+    /**
+     * This is the variable that will contain the value of the seocnds when the app with paused and the service started.
+     */
     int prevSeconds;
 
+    /**
+     * This is the notification builder that will build the notification view for us.
+     */
     NotificationCompat.Builder timerNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(CHANNEL_ID);
 
     @SuppressLint("InlinedApi")
@@ -40,6 +77,15 @@ public class TimerService extends Service {
         startForeground(1, new NotificationCompat.Builder(TimerService.this, createChannel()).setContentTitle("Goal In Progress").setPriority(NotificationManager.IMPORTANCE_MAX).build());
     }
 
+
+    /**
+     * @param intent Default method. :/
+     * @param flags Default method. :/
+     * @param startId Default method. :/
+     * @return int -> The state of the service. Start the service the when destroyed by the user. NOT BY THE APP
+     *
+     * @implNote This will do the task of running the stop watch and update the notification.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -69,6 +115,14 @@ public class TimerService extends Service {
         return START_STICKY;
     }
 
+
+    /**
+     * @param goalName This is the name of the goal. No special use here
+     * @param seconds The number of seconds passed
+     *
+     * @implNote This will update or create a new notification when the app is in the background. It also adds the actions like START, PAUSE and RESET
+     *
+     */
     @SuppressLint("NewApi")
     public void updateNotification(String goalName, long seconds) {
         if (notificationJustStarted) {
@@ -123,6 +177,12 @@ public class TimerService extends Service {
         return null;
     }
 
+
+    /**
+     * @return String of the channel. No use of returning tho.
+     *
+     * @implNote This will add a notification channel to display the notifications.
+     */
     @NonNull
     @TargetApi(26)
     private synchronized String createChannel() {
