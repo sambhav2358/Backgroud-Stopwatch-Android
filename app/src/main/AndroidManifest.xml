@@ -3,6 +3,7 @@
     package="com.sambhav2358.testing">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -22,6 +23,8 @@
         </activity>
 
         <service android:name=".TimerService"/>
+
+        <receiver android:name=".StopwatchNotificationActionReceiver"/>
     </application>
 
 </manifest>

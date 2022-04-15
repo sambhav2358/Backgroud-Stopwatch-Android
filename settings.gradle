@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Testing"
+rootProject.name = "Stop Watch"
 include ':app'

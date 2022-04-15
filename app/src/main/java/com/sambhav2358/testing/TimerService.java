@@ -2,6 +2,7 @@ package com.sambhav2358.testing;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,7 +12,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit;
 
 public class TimerService extends Service {
 
-    Long startTime = 0L, seconds = 0L;
+    long seconds = 0L;
     boolean notificationJustStarted = true;
-    Handler timerHandler = new Handler();
-    Runnable timerRunnable;
+    public static Handler timerHandler = new Handler();
+    public static Runnable timerRunnable;
     private final String CHANNEL_ID = "Channel_id";
     NotificationManager mNotificationManager;
     int prevSeconds;
@@ -46,16 +46,16 @@ public class TimerService extends Service {
         PrefUtil.setIsRunningInBackground(this, true);
 
         String goalName = "Sample Goal";
-        startTime = System.currentTimeMillis();
         notificationJustStarted = true;
 
         prevSeconds = (int) PrefUtil.getTimerSecondsPassed(TimerService.this);
 
+        seconds = prevSeconds;
+
         timerRunnable = new Runnable() {
             @Override
             public void run() {
-                long millis = System.currentTimeMillis() - startTime;
-                seconds = (millis / 1000) + prevSeconds;
+                seconds++;
                 updateNotification(goalName, seconds);
                 Log.d("timerCount", seconds + "");
 
@@ -66,7 +66,7 @@ public class TimerService extends Service {
         };
         timerHandler.postDelayed(timerRunnable, 0);
 
-        return Service.START_STICKY;
+        return START_STICKY;
     }
 
     @SuppressLint("NewApi")
@@ -81,7 +81,8 @@ public class TimerService extends Service {
                     .setOnlyAlertOnce(true)
                     .setOngoing(true)
                     .setPriority(NotificationCompat.PRIORITY_MAX)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground);
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setAutoCancel(true);
             notificationJustStarted = false;
         }
 
@@ -90,6 +91,18 @@ public class TimerService extends Service {
         String time = mins + ":" + (String.valueOf(seconds - TimeUnit.MINUTES.toSeconds(minutes)).length() == 2 ? (seconds - TimeUnit.MINUTES.toSeconds(minutes)) : "0" + (seconds - TimeUnit.MINUTES.toSeconds(minutes)));
 
         timerNotificationBuilder.setContentText(goalName + " is in progress\nthis session's length: " + time);
+
+        Intent pauseIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "p");
+        PendingIntent pendingIntentPause = PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_MUTABLE);
+        timerNotificationBuilder.addAction(0, "PAUSE", pendingIntentPause);
+
+        Intent startIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "s");
+        PendingIntent pendingIntentStart = PendingIntent.getBroadcast(this, 10, startIntent, PendingIntent.FLAG_MUTABLE);
+        timerNotificationBuilder.addAction(0, "START", pendingIntentStart);
+
+        Intent resetIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "r");
+        PendingIntent pendingIntentReset = PendingIntent.getBroadcast(this, 100, resetIntent, PendingIntent.FLAG_MUTABLE);
+        timerNotificationBuilder.addAction(0, "RESET", pendingIntentReset);
 
         mNotificationManager.notify(1, timerNotificationBuilder.build());
 
