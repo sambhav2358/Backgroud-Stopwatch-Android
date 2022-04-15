@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -74,6 +75,8 @@ public class TimerService extends Service {
         super.onCreate();
         String TAG = "Timer Service";
         Log.d(TAG, "onCreate: started service");
+
+        // This is used to update the notification
         startForeground(1, new NotificationCompat.Builder(TimerService.this, createChannel()).setContentTitle("Goal In Progress").setPriority(NotificationManager.IMPORTANCE_MAX).build());
     }
 
@@ -90,6 +93,7 @@ public class TimerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         PrefUtil.setIsRunningInBackground(this, true);
+        PrefUtil.setWasTimerRunning(this, true);
 
         String goalName = "Sample Goal";
         notificationJustStarted = true;
@@ -101,15 +105,24 @@ public class TimerService extends Service {
         timerRunnable = new Runnable() {
             @Override
             public void run() {
+                // add a second to the counter
                 seconds++;
+
+                //update the notification with that second
                 updateNotification(goalName, seconds);
+
+                //Print the seconds
                 Log.d("timerCount", seconds + "");
 
+                //Save the seconds passed to shared preferences
                 PrefUtil.setTimerSecondsPassed(TimerService.this,seconds);
 
+                //Re-run this action
                 timerHandler.postDelayed(this, 1000);
             }
         };
+
+        //Start the stop watch
         timerHandler.postDelayed(timerRunnable, 0);
 
         return START_STICKY;
@@ -146,19 +159,12 @@ public class TimerService extends Service {
 
         timerNotificationBuilder.setContentText(goalName + " is in progress\nthis session's length: " + time);
 
-        Intent pauseIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "p");
-        PendingIntent pendingIntentPause = PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_MUTABLE);
-        timerNotificationBuilder.addAction(0, "PAUSE", pendingIntentPause);
+        timerNotificationBuilder.addAction(createNotificationActionButton("START", "s"));
 
-        Intent startIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "s");
-        PendingIntent pendingIntentStart = PendingIntent.getBroadcast(this, 10, startIntent, PendingIntent.FLAG_MUTABLE);
-        timerNotificationBuilder.addAction(0, "START", pendingIntentStart);
+        timerNotificationBuilder.addAction(createNotificationActionButton("PAUSE", "p"));
 
-        Intent resetIntent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", "r");
-        PendingIntent pendingIntentReset = PendingIntent.getBroadcast(this, 100, resetIntent, PendingIntent.FLAG_MUTABLE);
-        timerNotificationBuilder.addAction(0, "RESET", pendingIntentReset);
+        timerNotificationBuilder.addAction(createNotificationActionButton("RESET", "r"));
 
-        mNotificationManager.notify(1, timerNotificationBuilder.build());
 
         startForeground(1, timerNotificationBuilder.build());
     }
@@ -169,6 +175,14 @@ public class TimerService extends Service {
         PrefUtil.setTimerSecondsPassed(this, seconds);
         PrefUtil.setIsRunningInBackground(this, false);
         super.onDestroy();
+    }
+
+    public NotificationCompat.Action createNotificationActionButton(String text, String actionName){
+        Intent intent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", actionName);
+
+        @SuppressLint("InlinedApi") PendingIntent pendingIntent = PendingIntent.getBroadcast(this, new Random().nextInt(100), intent, PendingIntent.FLAG_IMMUTABLE);
+
+        return new NotificationCompat.Action(0, text, pendingIntent);
     }
 
     @Nullable

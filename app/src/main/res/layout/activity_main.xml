@@ -18,13 +18,12 @@
         app:layout_constraintVertical_bias="0.3"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/circular_lottie"
-        android:visibility="invisible"/>
+        app:lottie_rawRes="@raw/circular_lottie" />
 
     <ImageView
         android:layout_width="300dp"
         android:layout_height="300dp"
-        android:src="@drawable/test"
+        android:src="@drawable/circle"
         app:layout_constraintBottom_toBottomOf="@+id/lottieAnimationView"
         app:layout_constraintEnd_toEndOf="@+id/lottieAnimationView"
         app:layout_constraintStart_toStartOf="@+id/lottieAnimationView"

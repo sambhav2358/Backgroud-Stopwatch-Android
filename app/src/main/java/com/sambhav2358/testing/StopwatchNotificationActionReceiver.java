@@ -17,16 +17,23 @@ public class StopwatchNotificationActionReceiver extends BroadcastReceiver {
 
         switch (intent.getStringExtra("action")){
             case "p":
+                Log.v("actionClicked", "p");
+                
                 TimerService.timerHandler.removeCallbacks(TimerService.timerRunnable);
                 PrefUtil.setIsRunningInBackground(context, false);
                 PrefUtil.setWasTimerRunning(context, false);
                 break;
             case "s":
+                Log.v("actionClicked", "s");
+                
+                TimerService.timerHandler.removeCallbacks(TimerService.timerRunnable);
                 TimerService.timerHandler.postDelayed(TimerService.timerRunnable, 1000);
                 PrefUtil.setIsRunningInBackground(context, true);
                 PrefUtil.setWasTimerRunning(context, true);
                 break;
             case "r":
+                Log.v("actionClicked", "r");
+                
                 TimerService.timerHandler.removeCallbacks(TimerService.timerRunnable);
                 PrefUtil.setIsRunningInBackground(context, false);
                 PrefUtil.setTimerSecondsPassed(context, 0);

@@ -14,13 +14,14 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+
+import com.airbnb.lottie.LottieAnimationView;
 
 import java.util.concurrent.TimeUnit;
 
@@ -53,17 +54,18 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(runnable,1000);
             isRunning = true;
 
-            findViewById(R.id.lottieAnimationView).setVisibility(View.VISIBLE);
+            ((LottieAnimationView) findViewById(R.id.lottieAnimationView)).resumeAnimation();
 
             PrefUtil.setIsRunningInBackground(this,false);
             PrefUtil.setWasTimerRunning(this,true);
         });
 
+
         findViewById(R.id.pause).setOnClickListener(v -> {
             isRunning = false;
             handler.removeCallbacks(runnable);
 
-            findViewById(R.id.lottieAnimationView).setVisibility(View.INVISIBLE);
+            ((LottieAnimationView) findViewById(R.id.lottieAnimationView)).pauseAnimation();
 
             PrefUtil.setIsRunningInBackground(this,false);
             PrefUtil.setWasTimerRunning(this,false);
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             time = "00:00";
             timeTextView.setText(time);
 
-            findViewById(R.id.lottieAnimationView).setVisibility(View.INVISIBLE);
+            ((LottieAnimationView) findViewById(R.id.lottieAnimationView)).pauseAnimation();
 
             PrefUtil.setTimerSecondsPassed(this,seconds);
             PrefUtil.setIsRunningInBackground(this,false);
@@ -154,11 +156,11 @@ public class MainActivity extends AppCompatActivity {
 
         isRunning = seconds != 0 && PrefUtil.getWasTimerRunning(this);
 
-        findViewById(R.id.lottieAnimationView).setVisibility(isRunning ? View.VISIBLE : View.INVISIBLE);
+        if (!isRunning) ((LottieAnimationView) findViewById(R.id.lottieAnimationView)).pauseAnimation();
+        else ((LottieAnimationView) findViewById(R.id.lottieAnimationView)).resumeAnimation();
 
         canRun = true;
 
-        if (isRunning) handler.postDelayed(runnable,1000);
         long minutes = TimeUnit.SECONDS.toMinutes(seconds);
         String mins = String.valueOf(minutes).length() == 2 ? minutes + "" : "0" + minutes;
         time = mins + ":" + (String.valueOf(seconds - TimeUnit.MINUTES.toSeconds(minutes)).length() == 2 ? (seconds - TimeUnit.MINUTES.toSeconds(minutes)) : "0" + (seconds - TimeUnit.MINUTES.toSeconds(minutes)));
@@ -173,9 +175,8 @@ public class MainActivity extends AppCompatActivity {
         stopService(serviceIntent);
     }
 
-    @NonNull
     @TargetApi(26)
-    private synchronized String createChannel() {
+    private synchronized void createChannel() {
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         String name = "STOPWATCH";
@@ -189,6 +190,5 @@ public class MainActivity extends AppCompatActivity {
             mNotificationManager.createNotificationChannel(mChannel);
         }
 
-        return CHANNEL_ID;
     }
 }
