@@ -8,6 +8,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -151,6 +153,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        Context context = this;
+
+        if (getIntent() != null && getIntent().getExtras() != null){
+
+            if ("r".equals(getIntent().getStringExtra("action"))) {
+                Log.v("actionClicked", "r");
+
+                TimerService.timerHandler.removeCallbacks(TimerService.timerRunnable);
+                PrefUtil.setIsRunningInBackground(context, false);
+                PrefUtil.setTimerSecondsPassed(context, 0);
+                PrefUtil.setWasTimerRunning(context, false);
+                context.stopService(MainActivity.serviceIntent);
+            }
+
+        }
 
         seconds = (int) PrefUtil.getTimerSecondsPassed(this);
 

@@ -4,11 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import java.util.HashMap;
 
 public class StopwatchNotificationActionReceiver extends BroadcastReceiver {
 
@@ -39,6 +34,12 @@ public class StopwatchNotificationActionReceiver extends BroadcastReceiver {
                 PrefUtil.setTimerSecondsPassed(context, 0);
                 PrefUtil.setWasTimerRunning(context, false);
                 context.stopService(MainActivity.serviceIntent);
+
+                Intent intent1 = new Intent();
+                intent1.setClassName("com.sambhav2358.testing", "com.sambhav2358.testing.MainActivity");
+                intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                context.startActivity(intent1);
                 break;
 
         }

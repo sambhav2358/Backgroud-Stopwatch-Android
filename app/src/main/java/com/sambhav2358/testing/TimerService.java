@@ -149,7 +149,10 @@ public class TimerService extends Service {
                     .setOngoing(true)
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setAutoCancel(true);
+                    .setAutoCancel(true)
+                    .addAction(createNotificationActionButton("START", "s"))
+                    .addAction(createNotificationActionButton("PAUSE", "p"))
+                    .addAction(createNotificationActionButton("RESET", "r"));
             notificationJustStarted = false;
         }
 
@@ -158,12 +161,6 @@ public class TimerService extends Service {
         String time = mins + ":" + (String.valueOf(seconds - TimeUnit.MINUTES.toSeconds(minutes)).length() == 2 ? (seconds - TimeUnit.MINUTES.toSeconds(minutes)) : "0" + (seconds - TimeUnit.MINUTES.toSeconds(minutes)));
 
         timerNotificationBuilder.setContentText(goalName + " is in progress\nthis session's length: " + time);
-
-        timerNotificationBuilder.addAction(createNotificationActionButton("START", "s"));
-
-        timerNotificationBuilder.addAction(createNotificationActionButton("PAUSE", "p"));
-
-        timerNotificationBuilder.addAction(createNotificationActionButton("RESET", "r"));
 
 
         startForeground(1, timerNotificationBuilder.build());
@@ -178,11 +175,20 @@ public class TimerService extends Service {
     }
 
     public NotificationCompat.Action createNotificationActionButton(String text, String actionName){
-        Intent intent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", actionName);
 
-        @SuppressLint("InlinedApi") PendingIntent pendingIntent = PendingIntent.getBroadcast(this, new Random().nextInt(100), intent, PendingIntent.FLAG_IMMUTABLE);
+        if (actionName.equals("r")) {
+            Intent intent = new Intent(this, MainActivity.class).putExtra("action", actionName);
 
-        return new NotificationCompat.Action(0, text, pendingIntent);
+            @SuppressLint("InlinedApi") PendingIntent pendingIntent = PendingIntent.getActivity(this, new Random().nextInt(100), intent, PendingIntent.FLAG_MUTABLE);
+
+            return new NotificationCompat.Action(0, text, pendingIntent);
+        }else {
+
+            Intent intent = new Intent(this, StopwatchNotificationActionReceiver.class).putExtra("action", actionName);
+            @SuppressLint("InlinedApi") PendingIntent pendingIntent = PendingIntent.getBroadcast(this, new Random().nextInt(100), intent, PendingIntent.FLAG_MUTABLE);
+
+            return new NotificationCompat.Action(0, text, pendingIntent);
+        }
     }
 
     @Nullable
