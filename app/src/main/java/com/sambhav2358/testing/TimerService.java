@@ -160,7 +160,7 @@ public class TimerService extends Service {
         String mins = String.valueOf(minutes).length() == 2 ? minutes + "" : "0" + minutes;
         String time = mins + ":" + (String.valueOf(seconds - TimeUnit.MINUTES.toSeconds(minutes)).length() == 2 ? (seconds - TimeUnit.MINUTES.toSeconds(minutes)) : "0" + (seconds - TimeUnit.MINUTES.toSeconds(minutes)));
 
-        timerNotificationBuilder.setContentText(goalName + " is in progress\nthis session's length: " + time);
+        timerNotificationBuilder.setContentText("Stop watch is running.\n Time elapsed: " + time);
 
 
         startForeground(1, timerNotificationBuilder.build());
